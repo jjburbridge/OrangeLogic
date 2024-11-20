@@ -4,9 +4,11 @@
 
 ## Installation
 
-```sh
+This plugin has not yet been published.
+
+<!-- ```sh
 npm install sanity-plugin-oldam
-```
+``` -->
 
 ## Usage
 
