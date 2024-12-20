@@ -28,12 +28,12 @@ export const ImagePreview = (props: ObjectFieldProps) => {
   }, [value])
 
   useEffect(() => {
-    if (!customImage || !customImage.imageUrl) {
-      return
-    }
     // prorbably worth seperating this out into its own exported function, then it could aslo be used by the client like sanity image builder
 
     const getImageUrl = () => {
+      if (!customImage || !customImage.imageUrl) {
+        return
+      }
       if (value?.crop) {
         const imageRegex = new RegExp(
           /^\/(?<type>.*?(?=\/))\/(?<prefix>.*?(?=\/))\/(?<identifier>.*?(?=\/))\/(?<region>.*?(?=\/))\/(?<size>.*?(?=\/))\/(?<rotation>.*?(?=\/))\/(?<quality>.*?(?=\.))\.(?<format>.*?(?=\?|$))/,
