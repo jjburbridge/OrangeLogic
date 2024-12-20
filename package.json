@@ -41,7 +41,7 @@
     "lint": "eslint .",
     "prepublishOnly": "npm run build",
     "watch": "pkg-utils watch --strict",
-    "typegen": "npm run sanity schema extract && npm run sanity typegen generate"
+    "typegen": "sanity schema extract && sanity typegen generate"
   },
   "dependencies": {
     "@sanity/icons": "^3.4.0",
