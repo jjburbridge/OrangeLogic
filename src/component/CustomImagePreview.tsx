@@ -1,4 +1,4 @@
-import {EllipsisHorizontalIcon, ResetIcon} from '@sanity/icons'
+import {EllipsisHorizontalIcon, ResetIcon, CropIcon} from '@sanity/icons'
 import {Button, Card, Inline, Menu, MenuButton, MenuItem, Text, TextInput} from '@sanity/ui'
 import {defineQuery} from 'groq'
 import {useEffect, useState} from 'react'
@@ -6,6 +6,7 @@ import {ObjectFieldProps, Path, set, unset, useClient} from 'sanity'
 
 import {QueryResult} from '../sanity.types'
 import {CustomImageInput} from './CustomImage'
+import {CropTool} from './CropTool'
 
 export type Crop = {top: number; left: number; width: number; height: number}
 
@@ -28,24 +29,24 @@ export const ImagePreview = (props: ObjectFieldProps) => {
   }, [value])
 
   useEffect(() => {
-    if (!customImage || !customImage.imageUrl) {
-      return
-    }
-    // prorbably worth seperating this out into its own exported function, then it could aslo be used by the client like sanity image builder
-
     const getImageUrl = () => {
-      if (value?.crop) {
-        const imageRegex = new RegExp(
-          /^\/(?<type>.*?(?=\/))\/(?<prefix>.*?(?=\/))\/(?<identifier>.*?(?=\/))\/(?<region>.*?(?=\/))\/(?<size>.*?(?=\/))\/(?<rotation>.*?(?=\/))\/(?<quality>.*?(?=\.))\.(?<format>.*?(?=\?|$))/,
-        )
-        const existingImageURL = new URL(customImage.imageUrl)
-        const {type, prefix, identifier, size, rotation, quality, format} = imageRegex.exec(
-          existingImageURL.pathname,
-        )?.groups as any // github issue for this: https://github.com/microsoft/TypeScript/issues/32098
-        const cropPath = `pct:${value.crop.left},${value.crop.top},${value.crop.width},${value.crop.height}`
-        const cropImagePath = `/${type}/${prefix}/${identifier}/${cropPath}/${size}/${rotation}/${quality}.${format}`
-        return setImageUrl(`${existingImageURL.origin}${cropImagePath}`)
+      if (!customImage || !customImage.imageUrl) {
+        return
       }
+
+      // this is an example of how to use the crop data to generate a new image url. it could be used on the front end
+      // if (value?.crop) {
+      //   const imageRegex = new RegExp(
+      //     /^\/(?<type>.*?(?=\/))\/(?<prefix>.*?(?=\/))\/(?<identifier>.*?(?=\/))\/(?<region>.*?(?=\/))\/(?<size>.*?(?=\/))\/(?<rotation>.*?(?=\/))\/(?<quality>.*?(?=\.))\.(?<format>.*?(?=\?|$))/,
+      //   )
+      //   const existingImageURL = new URL(customImage.imageUrl)
+      //   const {type, prefix, identifier, size, rotation, quality, format} = imageRegex.exec(
+      //     existingImageURL.pathname,
+      //   )?.groups as any // github issue for this: https://github.com/microsoft/TypeScript/issues/32098
+      //   const cropPath = `pct:${value.crop.left},${value.crop.top},${value.crop.width},${value.crop.height}`
+      //   const cropImagePath = `/${type}/${prefix}/${identifier}/${cropPath}/${size}/${rotation}/${quality}.${format}`
+      //   return setImageUrl(`${existingImageURL.origin}${cropImagePath}`)
+      // }
       setImageUrl(customImage.imageUrl)
     }
     getImageUrl()
@@ -93,27 +94,8 @@ export const ImagePreview = (props: ObjectFieldProps) => {
       <div style={{position: 'relative'}}>
         <Card style={{textAlign: 'center'}}>
           <div style={{width: '100%', textAlign: 'center', overflow: 'hidden'}}>
-            <img
-              src={imageUrl}
-              style={{
-                maxWidth: '587px',
-              }}
-            />
-            <Inline space={1}>
-              <Button onClick={() => setCrop({top: 20, left: 20, width: 50, height: 50})}>
-                Set Crop to x:20%, y:20%, w:50%, h:50%
-              </Button>
-              <Button onClick={() => setCrop()}>Reset crop</Button>
-            </Inline>
+            {imageUrl && <CropTool crop={value.crop} setCrop={setCrop} image={imageUrl} />}
           </div>
-          {value.crop && (
-            <Card>
-              Current Crop is {value.crop.left ? `x:${value.crop.left}% ` : ''}
-              {value.crop.top ? `:${value.crop.left}% ` : ''}
-              {value.crop.width ? `w:${value.crop.width}% ` : ''}
-              {value.crop.height ? `h:${value.crop.height}% ` : ''}
-            </Card>
-          )}
           <Card>
             {
               // This is an example of setting an overwrite meta data field. In the groq to get the data out we should use the coalesce
@@ -147,6 +129,12 @@ export const ImagePreview = (props: ObjectFieldProps) => {
                     tone="critical"
                     text="Clear field"
                     onClick={clearImage}
+                  />
+                  <MenuItem
+                    icon={CropIcon}
+                    tone="critical"
+                    text="Clear crop"
+                    onClick={() => setCrop()}
                   />
                 </Menu>
               }
